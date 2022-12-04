@@ -1,8 +1,14 @@
 from flask import Flask
+from flask import Flask, render_template
+import secret
 app=Flask(__name__)
 
-@app.route('/')
-def index():
-    return '<h1>Hello World!</h1>'
-print("Starting Flask app", app.name)
-app.run(debug=True)
+@app.route('/table/<nm>')
+def table(nm):
+    return render_template('table.html', name=nm)  
+
+
+@app.route('/input/<nm>')
+def input(nm):
+    return render_template('input.html', name=nm)  
+

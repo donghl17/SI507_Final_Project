@@ -13,50 +13,63 @@
 #     if keyword!="":
 #         url_head=url_head+"keyword="+keyword+"&"
 
-import time
-from seleniumwire import webdriver
-from seleniumwire.utils import decode
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.service import Service
-from webdriver_manager.firefox import GeckoDriverManager
-import json
 
-svc=  Service(GeckoDriverManager().install())
-options = {
-    'disable_encoding': True  # Ask the server not to compress the response
-}
-profile = webdriver.FirefoxProfile()
-webdriver.Chrome
-driver = webdriver.Firefox(service=svc, seleniumwire_options=options, firefox_binary=r"C:\Program Files\Mozilla Firefox\firefox.exe")
-driver.get("https://www.ticketmaster.com/pistons-vs-clippers-saddiq-bey-bobblehead-presented-by-bally-sports/event/08005D0BF0B74785?refArtist=K8vZ91718T7")
-button=WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[8]/div/div/div/div[3]/div/div/button")))
-button.click()
+# import time
+# from seleniumwire import webdriver
+# from seleniumwire.utils import decode
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.firefox.service import Service
+# from webdriver_manager.firefox import GeckoDriverManager
+# import json
 
-for request in driver.requests:
-    if request.response and "offeradapter" in request.url:
-        print(request.url)
-        print(request.response.body)
-        print("")
+# svc=  Service(GeckoDriverManager().install())
+# options = {
+#     'disable_encoding': True  # Ask the server not to compress the response
+# }
+# profile = webdriver.FirefoxProfile()
+# webdriver.Chrome
+# driver = webdriver.Firefox(service=svc, seleniumwire_options=options, firefox_binary=r"C:\Program Files\Mozilla Firefox\firefox.exe")
+# driver.get("https://www.ticketmaster.com/pistons-vs-clippers-saddiq-bey-bobblehead-presented-by-bally-sports/event/08005D0BF0B74785?refArtist=K8vZ91718T7")
+# button=WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[8]/div/div/div/div[3]/div/div/button")))
+# button.click()
+
+# for request in driver.requests:
+#     if request.response and "offeradapter" in request.url:
+#         print(request.url)
+#         print(request.response.body)
+#         print("")
 
 
 
-# from flask import Flask
-# from flask import Flask, render_template
-# import secret
-# app_final=Flask(__name__)
+from flask import Flask
+from flask import Flask, render_template, request
+import secret
+app_final=Flask(__name__)
 
 # @app_final.route('/table/<nm>')
 # def table(nm):
 #     return render_template('table.html', name=nm)  
 
 
-# @app_final.route('/input/<nm>')
-# def input(nm):
-#     return render_template('input.html', name=nm)  
+@app_final.route('/input/<nm>')
+def input(nm):
+    return render_template('input.html', name=nm)  
 
-# if __name__ == '__main__':
-#     print("Starting Flask app")
-#     app_final.run(debug=True)
+@app_final.route('/table', methods=['POST','Get'])
+def handle_the_form():
+    if request.method == 'GET':
+        return f"The URL /data is accessed directly. Try going to '/form' to submit form"
+    if request.method == 'POST':
+        artist=request.form["artist"]
+        print(len(artist)) # if len==0, then artist no input
+        venue=request.form["venue"]
+        date=request.form["date"]
+        op=request.form["op"]
+        return render_template('table.html', name=artist, venue=venue, date=date, op=op) 
+
+if __name__ == '__main__':
+    print("Starting Flask app")
+    app_final.run(debug=True)
 

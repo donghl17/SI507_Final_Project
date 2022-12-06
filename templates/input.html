@@ -5,8 +5,23 @@
     <title>HTML Forms Demo</title>
 </head>
 <body>
+<form action="/table" method="POST">
     <p>
-        What's your name? <input name="name" type="text"/><br/>
+        What's the artist? <input name="artist" type="text"/><br/>
     </p>
+    <p>
+        What's the venue? <input name="venue" type="text"/><br/>
+    </p>
+    <p>
+        What's the date? <input name="date" type="text"/><br/>
+    </p>
+    <p>
+        New search or check historical results? <br/>
+        <input name="op" type="radio",value="Search"/>Search       
+        <input name="op" type="radio",value="History"/>History<br/>
+    </p>
+    <p><input type="submit" value="submit"></p>
+    <!-- <input type="submit" value="History"> -->
+</form>
 </body>
 </html>

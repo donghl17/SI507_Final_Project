@@ -12,34 +12,51 @@
 #     url_tail="apikey=YAzeD7JmDWcJipX6Q3XEnAhJZMjxqBSA"
 #     if keyword!="":
 #         url_head=url_head+"keyword="+keyword+"&"
-from flask import Flask
-from flask import Flask, render_template
-import secret
-app_final=Flask(__name__)
 
-@app_final.route('/table/<nm>')
-def table(nm):
-    return render_template('table.html', name=nm)  
+import time
+from seleniumwire import webdriver
+from seleniumwire.utils import decode
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service
+from webdriver_manager.firefox import GeckoDriverManager
+import json
+
+svc=  Service(GeckoDriverManager().install())
+options = {
+    'disable_encoding': True  # Ask the server not to compress the response
+}
+profile = webdriver.FirefoxProfile()
+webdriver.Chrome
+driver = webdriver.Firefox(service=svc, seleniumwire_options=options, firefox_binary=r"C:\Program Files\Mozilla Firefox\firefox.exe")
+driver.get("https://www.ticketmaster.com/pistons-vs-clippers-saddiq-bey-bobblehead-presented-by-bally-sports/event/08005D0BF0B74785?refArtist=K8vZ91718T7")
+button=WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[8]/div/div/div/div[3]/div/div/button")))
+button.click()
+
+for request in driver.requests:
+    if request.response and "offeradapter" in request.url:
+        print(request.url)
+        print(request.response.body)
+        print("")
 
 
-@app_final.route('/input/<nm>')
-def input(nm):
-    return render_template('input.html', name=nm)  
 
-if __name__ == '__main__':
-    print("Starting Flask app")
-    app_final.run(debug=True)
+# from flask import Flask
+# from flask import Flask, render_template
+# import secret
+# app_final=Flask(__name__)
 
-# import time
-# from selenium import webdriver
+# @app_final.route('/table/<nm>')
+# def table(nm):
+#     return render_template('table.html', name=nm)  
 
-# profile = webdriver.FirefoxProfile()
-# driver = webdriver.Firefox(firefox_binary=r"C:\Program Files\Mozilla Firefox\firefox.exe")
-# driver.get("https://www.ticketmaster.com/detroit-pistons-vs-memphis-grizzlies-detroit-michigan-12-04-2022/event/08005D0BFC4E4F80")
-# time.sleep(5)
-# networkScript = """
-# var network = performance.getEntries() || {};
-# return network;
-# """
-# networkRequests = driver.execute_script(networkScript)
-# print(networkRequests)
+
+# @app_final.route('/input/<nm>')
+# def input(nm):
+#     return render_template('input.html', name=nm)  
+
+# if __name__ == '__main__':
+#     print("Starting Flask app")
+#     app_final.run(debug=True)
+

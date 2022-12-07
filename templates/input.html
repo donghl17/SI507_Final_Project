@@ -7,18 +7,18 @@
 <body>
 <form action="/table" method="POST">
     <p>
-        What's the artist? <input name="artist" type="text"/><br/>
+        What's the keyword? (such as artist's name)<input name="artist" type="text"/><br/>
     </p>
     <p>
-        What's the venue? <input name="venue" type="text"/><br/>
+        What's the city? <input name="venue" type="text"/><br/>
     </p>
     <p>
-        What's the date? <input name="date" type="text"/><br/>
+        What's the classificationName? (such as music, sports)<input name="classN" type="text"/><br/>
     </p>
     <p>
         New search or check historical results? <br/>
-        <input name="op" type="radio",value="Search"/>Search       
-        <input name="op" type="radio",value="History"/>History<br/>
+        <input name="op" type="radio", id="Search", value="Search"/>Search       
+        <input name="op" type="radio", id="History", value="History"/>History<br/>
     </p>
     <p><input type="submit" value="submit"></p>
     <!-- <input type="submit" value="History"> -->

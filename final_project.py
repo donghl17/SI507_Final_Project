@@ -14,33 +14,14 @@
 #         url_head=url_head+"keyword="+keyword+"&"
 
 
-# import time
-# from seleniumwire import webdriver
-# from seleniumwire.utils import decode
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.firefox.service import Service
-# from webdriver_manager.firefox import GeckoDriverManager
-# import json
-
-# svc=  Service(GeckoDriverManager().install())
-# options = {
-#     'disable_encoding': True  # Ask the server not to compress the response
-# }
-# profile = webdriver.FirefoxProfile()
-# webdriver.Chrome
-# driver = webdriver.Firefox(service=svc, seleniumwire_options=options, firefox_binary=r"C:\Program Files\Mozilla Firefox\firefox.exe")
-# driver.get("https://www.ticketmaster.com/pistons-vs-clippers-saddiq-bey-bobblehead-presented-by-bally-sports/event/08005D0BF0B74785?refArtist=K8vZ91718T7")
-# button=WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[8]/div/div/div/div[3]/div/div/button")))
-# button.click()
-# for request in driver.requests:
-#     if request.response and "offeradapter" in request.url:
-#         print(request.url)
-#         print(request.response.body)
-#         print("")
-
-
+import time
+from seleniumwire import webdriver
+from seleniumwire.utils import decode
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service
+from webdriver_manager.firefox import GeckoDriverManager
 
 from flask import Flask
 from flask import Flask, render_template, request
@@ -48,10 +29,18 @@ import secret
 import json
 import requests as rq
 app_final=Flask(__name__)
-
+APIData=None
 # @app_final.route('/table/<nm>')
 # def table(nm):
 #     return render_template('table.html', name=nm)  
+
+class TicketClass:
+    def __init__(self,eventid,currency_list,min_list,max_list,count_list):
+        self.eventid=eventid
+        self.currency_list=currency_list
+        self.min_list=min_list
+        self.max_list=max_list
+        self.count_list=count_list
 
 class EventClass:
     def __init__(self,name,city,eventdate,salestart,presaledate,id,url,img,pricemin,currency,pricemax):
@@ -67,22 +56,33 @@ class EventClass:
         self.currency=currency
         self.pricemax=pricemax
 
-
 def data_process(APIData):
+    class_list=[]
     for i in APIData["_embedded"]["events"]:
         # print(i.keys())
         # print(i["_embedded"].keys())
-        print("name: ",i["name"])
-        print("city: ",i["_embedded"]["venues"][0]["city"]['name'])
-        print("eventdate: ",i["dates"]["start"]["localDate"])
-        print("salestart: ",i["sales"]["public"]["startDateTime"])
-        print("presaledate: ",i["sales"]["presales"][0]["startDateTime"])
-        print("id: ",i["id"])
-        print("url: ",i["url"])
-        print("img: ",i["images"][0]['url'])
-        print("pricemin: ",i["priceRanges"][0]["min"])
-        print("pricemin: ",i["priceRanges"][0]["currency"])
-        print("pricemax: ",i["priceRanges"][0]["max"])
+        # print("name: ",i["name"])
+        # print("city: ",i["_embedded"]["venues"][0]["city"]['name'])
+        # print("eventdate: ",i["dates"]["start"]["localDate"])
+        # print("salestart: ",i["sales"]["public"]["startDateTime"])
+        # print("presaledate: ",i["sales"]["presales"][0]["startDateTime"])
+        # print("id: ",i["id"])
+        # print("url: ",i["url"])
+        # print("img: ",i["images"][0]['url'])
+        # print("pricemin: ",i["priceRanges"][0]["min"])
+        # print("pricemin: ",i["priceRanges"][0]["currency"])
+        # print("pricemax: ",i["priceRanges"][0]["max"])
+        if "priceRanges" not in i.keys() and "presales" not in i["sales"].keys():
+            tmp=EventClass(i["name"],i["_embedded"]["venues"][0]["city"]['name'],i["dates"]["start"]["localDate"],i["sales"]["public"]["startDateTime"],"N/A",i["id"],i["url"],i["images"][0]['url'],"N/A","N/A","N/A")
+
+        elif "priceRanges" not in i.keys():
+            tmp=EventClass(i["name"],i["_embedded"]["venues"][0]["city"]['name'],i["dates"]["start"]["localDate"],i["sales"]["public"]["startDateTime"],i["sales"]["presales"][0]["startDateTime"],i["id"],i["url"],i["images"][0]['url'],"N/A","N/A","N/A")
+        elif "presales" not in i["sales"].keys():
+            tmp=EventClass(i["name"],i["_embedded"]["venues"][0]["city"]['name'],i["dates"]["start"]["localDate"],i["sales"]["public"]["startDateTime"],"N/A",i["id"],i["url"],i["images"][0]['url'],i["priceRanges"][0]["min"],i["priceRanges"][0]["currency"],i["priceRanges"][0]["max"])
+        else:
+            tmp=EventClass(i["name"],i["_embedded"]["venues"][0]["city"]['name'],i["dates"]["start"]["localDate"],i["sales"]["public"]["startDateTime"],i["sales"]["presales"][0]["startDateTime"],i["id"],i["url"],i["images"][0]['url'],i["priceRanges"][0]["min"],i["priceRanges"][0]["currency"],i["priceRanges"][0]["max"])
+        class_list.append(tmp)
+    return class_list
 
 def api_search(keyword,city, classN):
     base_str="https://app.ticketmaster.com/discovery/v2/events.json?"
@@ -99,29 +99,66 @@ def api_search(keyword,city, classN):
         classN_str="classN="+classN+"&"
     else:
         classN_str=""
-    # search_str=base_str+key_str+city_str+classN_str+end_str
-    search_str="https://app.ticketmaster.com/discovery/v2/events.json?keyword=lakers&city=new%20york&classN=sports&apikey=YAzeD7JmDWcJipX6Q3XEnAhJZMjxqBSA"
+    search_str=base_str+key_str+city_str+classN_str+end_str
+    # search_str="https://app.ticketmaster.com/discovery/v2/events.json?keyword=lakers&city=new%20york&classN=sports&apikey=YAzeD7JmDWcJipX6Q3XEnAhJZMjxqBSA"
     response=rq.get(search_str)
     APIData=json.loads(response.text)
-    # print(search_str)
-    data_process(APIData)
     # print(APIData)
-    return str(len(APIData))
+    class_list=data_process(APIData)
+    # print(APIData)
+    return class_list
+
+def check_details(url_in):
+    svc=  Service(GeckoDriverManager().install())
+    options = {
+        'disable_encoding': True  # Ask the server not to compress the response
+    }
+    profile = webdriver.FirefoxProfile()
+    webdriver.Chrome
+    driver = webdriver.Firefox(service=svc, seleniumwire_options=options, firefox_binary=r"C:\Program Files\Mozilla Firefox\firefox.exe")
+    driver.get(url_in)
+    # driver.get("https://www.ticketmaster.com/pistons-vs-clippers-saddiq-bey-bobblehead-presented-by-bally-sports/event/08005D0BF0B74785?refArtist=K8vZ91718T7")
+    button=WebDriverWait(driver,80).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[8]/div/div/div/div[3]/div/div/button")))
+    button.click()
+    for request in driver.requests:
+        if request.response and "offeradapter" in request.url and "listpricerange" in request.url:
+            print(request.url)
+            # print(json.loads(request.response.body))
+            ticket_dict=json.loads(request.response.body)
+            
+            print(ticket_dict["eventId"])
+            eventid=ticket_dict["eventId"]
+            currency_list=[]
+            min_list=[]
+            max_list=[]
+            count_list=[]
+            for i in ticket_dict["facets"]:
+                currency_list.append(i["listPriceRange"][0]["currency"])
+                min_list.append(i["listPriceRange"][0]["min"])
+                max_list.append(i["listPriceRange"][0]["max"])
+                count_list.append(i["count"])
+            # print("currency: ",currency_list[0:10])
+            # print("min_price: ",min_list[0:10])
+            # print("min_price: ",max_list[0:10])
+            # print("count: ",count_list[0:10])
+            ticket_obj=TicketClass(eventid,currency_list,min_list,max_list,count_list)
+            return ticket_obj
+    return None
 
 def load_history(keyword,city, classN):
     pass
 
-@app_final.route('/input/<nm>')
-def input(nm):
-    return render_template('input.html', name=nm)  
+@app_final.route('/input')
+def input():
+    return render_template('input.html')  
 
 @app_final.route('/table', methods=['POST','Get'])
 def handle_the_form():
+    global APIData
     if request.method == 'GET':
-        return f"The URL /data is accessed directly. Try going to '/form' to submit form"
+        return f"The URL /table is accessed directly. Try going to '/input' to submit form"
     if request.method == 'POST':
         artist=request.form["artist"]
-        
         venue=request.form["venue"]
         classN=request.form["classN"]
         op=request.form["op"]
@@ -136,7 +173,23 @@ def handle_the_form():
             APIData=load_history(artist,venue, classN)
         else:
             return "Operation code ERROR!"
-        return render_template('table.html', name=APIData, venue=venue, classN=classN, op=op) 
+        return render_template('table.html', name=len(APIData), x=APIData) 
+
+@app_final.route('/ticket', methods=['POST','Get'])
+def ticket_handle():
+    global APIData
+    # print(APIData)
+    if request.method == 'GET':
+        return f"The URL /ticket is accessed directly. Try going to '/table' to submit form"
+    if request.method == 'POST':
+        spe_event=request.form["detail"]
+        for i in APIData:
+            if spe_event==i.name:
+                ticket_obj=check_details(i.url)
+                # currency_list,min_list,max_list,count_list):
+                return render_template('ticket.html', name=len(ticket_obj.count_list), event=spe_event, count_list=ticket_obj.count_list,min_list=ticket_obj.min_list, max_list=ticket_obj.max_list, currency_list=ticket_obj.currency_list) 
+        return f"The event name doesn't exist. Try going to '/table' to submit form"
+
 
 if __name__ == '__main__':
     print("Starting Flask app")

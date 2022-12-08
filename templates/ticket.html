@@ -1,0 +1,24 @@
+<h1> There are {{name}} offers for {{event}}available!</h1>
+<!-- <p>Today's techonlogy headlines are...</p> -->
+
+<style>
+    table,table tr th, table tr td { border:1px solid #000000}
+    /* table { width: 200px; min-height: 25px; line-height: 25px; text-align: center; border-collapse: collapse;}    */
+</style>
+<table>
+    <tr>
+        <!-- (self,eventid,currency_list,min_list,max_list,count_list) -->
+      <th>Lowest Price</th>
+      <th>Highest Price</th>  
+      <th>Count</th>
+      <th>Currency</th>
+    </tr>
+    {% for row_index in range(count_list|count) %}
+    <tr>
+      <td>{{ min_list[row_index] }}</td>
+      <td>{{ max_list[row_index] }}</td>
+      <td>{{ count_list[row_index] }}</td>
+      <td>{{ currency_list[row_index] }}</td>
+    </tr>
+    {% endfor %}
+  </table>

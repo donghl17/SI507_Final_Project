@@ -30,9 +30,8 @@ import json
 import requests as rq
 app_final=Flask(__name__)
 APIData=None
-# @app_final.route('/table/<nm>')
-# def table(nm):
-#     return render_template('table.html', name=nm)  
+history_tree=[]
+
 
 class TicketClass:
     def __init__(self,eventid,currency_list,min_list,max_list,count_list):
@@ -145,7 +144,46 @@ def check_details(url_in):
             return ticket_obj
     return None
 
+# [[artist,[venue,[classN,file_name]]],
+#  [artist,[venue,[classN,file_name],
+#                 [classN,file_name]]] ]
+
+def save_results(APIData,artist,venue, classN):
+    global history_tree
+    file_name=artist+"_"+venue+"_"+classN+"_"+str(time.time())
+    if len(history_tree)==0:
+        history_tree.append([artist,[venue,[classN,file_name]]])
+    else:
+        found=False
+        for i in history_tree:
+            if i[0]==artist:
+                for j in i[1:]:
+                    if j[0]==venue:
+                        for k in j[1:]:
+                            if k[0]==classN:
+                                k[1]=file_name#overwrite
+                                found=True
+                                break
+                        if found==False:
+                            j.append([classN,file_name])
+                            found=True
+                if found==False:
+                    i.append([venue,[classN,file_name]])
+                    found=True
+        if found==False:
+            i.append([artist,[venue,[classN,file_name]]])
+            found=True
+    print(history_tree)
+    f=open("history_tree.json","w")
+    f.write(str(history_tree))
+    f.close()
+    
+                        
+                            
+                        
+
 def load_history(keyword,city, classN):
+    global history_tree
     pass
 
 @app_final.route('/input')
@@ -154,6 +192,7 @@ def input():
 
 @app_final.route('/table', methods=['POST','Get'])
 def handle_the_form():
+    global history_tree
     global APIData
     if request.method == 'GET':
         return f"The URL /table is accessed directly. Try going to '/input' to submit form"
@@ -169,6 +208,7 @@ def handle_the_form():
         # print(len(artist)) # if len==0, then artist no input
         if op=="Search":
             APIData=api_search(artist,venue, classN)
+            save_results(APIData,artist,venue, classN)
         elif op=="History":
             APIData=load_history(artist,venue, classN)
         else:

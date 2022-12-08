@@ -28,6 +28,8 @@ from flask import Flask, render_template, request
 import secret
 import json
 import requests as rq
+import pickle
+
 app_final=Flask(__name__)
 APIData=None
 history_tree=[]
@@ -150,7 +152,10 @@ def check_details(url_in):
 
 def save_results(APIData,artist,venue, classN):
     global history_tree
-    file_name=artist+"_"+venue+"_"+classN+"_"+str(time.time())
+    file_name=artist+"_"+venue+"_"+classN+"_"+str(time.time())+".log"
+    fi=open(file_name,"wb")
+    pickle.dump(APIData,fi)
+    fi.close()  
     if len(history_tree)==0:
         history_tree.append([artist,[venue,[classN,file_name]]])
     else:
@@ -177,14 +182,20 @@ def save_results(APIData,artist,venue, classN):
     f=open("history_tree.json","w")
     f.write(str(history_tree))
     f.close()
-    
-                        
-                            
-                        
-
-def load_history(keyword,city, classN):
+              
+def load_history(keyword,city,classN):
     global history_tree
-    pass
+    result=None
+    for i in history_tree:
+        if i[0]==keyword:
+            for j in i[1:]:
+                if j[0]==city:
+                    for k in j[1:]:
+                        if k[0]==classN:
+                            fil=open(k[1],"rb")
+                            result=pickle.load(fil)
+                            fil.close()
+    return result
 
 @app_final.route('/input')
 def input():
@@ -211,6 +222,8 @@ def handle_the_form():
             save_results(APIData,artist,venue, classN)
         elif op=="History":
             APIData=load_history(artist,venue, classN)
+            if APIData is None:
+                return "History of "+artist+"_"+venue+"_"+classN+" NOT FOUND"
         else:
             return "Operation code ERROR!"
         return render_template('table.html', name=len(APIData), x=APIData) 
